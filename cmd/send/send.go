@@ -74,7 +74,7 @@ var SendCmd = &cobra.Command{
 }
 
 func init() {
-	SendCmd.Flags().StringVarP(&to_send, "to", "t", "", "Label for the network to be identified with")
+	SendCmd.Flags().StringVarP(&to_send, "to", "t", "", "Address to send the ether or tokens to")
 	SendCmd.MarkFlagRequired("to")
 	SendCmd.Flags().StringVarP(&amount_send, "amt", "a", "", "Label for the network to be identified with")
 	SendCmd.MarkFlagRequired("amt")

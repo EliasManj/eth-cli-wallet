@@ -22,7 +22,7 @@ func printNetwork(network wallet.Network) {
 var NetworkCmd = &cobra.Command{
 	Use:   "network",
 	Short: "Network is a palette that contains network based commands",
-	Long:  `Manage and configure network settings, you can add any EVM-compatible network to your wallet`,
+	Long:  `Manage and configure network settings, you can add any EVM-compatible network to your wallet, select a network or delete a network.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},

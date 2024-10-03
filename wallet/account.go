@@ -46,7 +46,6 @@ func CreateNewAccount(db *bolt.DB, label string) (Account, error) {
 		Label:    label,
 		Publicy:  publicKey,
 		Privatey: privateKey,
-		Selected: true,
 	}
 	return acc, ImportAccount(db, acc)
 }
@@ -71,7 +70,11 @@ func ImportAccount(db *bolt.DB, account Account) error {
 		return bucket.Put([]byte(account.Label), accountJSON)
 	})
 
-	return err
+	if err != nil {
+		return err
+	}
+
+	return SelectAccount(db, account.Label)
 }
 
 func AddTokenToAccount(db *bolt.DB, accountLabel, tokenAddress string) error {

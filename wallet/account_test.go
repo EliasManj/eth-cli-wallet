@@ -127,3 +127,22 @@ func TestOnlyOneSelectedAccount(t *testing.T) {
 	require.NoError(t, err)
 	require.False(t, acc2.Selected)
 }
+
+func TestCreateTwoAccountsSelect(t *testing.T) {
+	account1, err := CreateNewAccount(db, "testcreatetwoaccountsselect1")
+	require.NoError(t, err)
+	account2, err := CreateNewAccount(db, "testcreatetwoaccountsselect2")
+	require.NoError(t, err)
+
+	activeAccount, err := GetSelectedAccount(db)
+	require.NoError(t, err)
+	require.Equal(t, account2.Label, activeAccount.Label)
+
+	acc1, err := GetAccount(db, account1.Label)
+	require.NoError(t, err)
+	require.False(t, acc1.Selected)
+
+	acc2, err := GetAccount(db, account2.Label)
+	require.NoError(t, err)
+	require.True(t, acc2.Selected)
+}

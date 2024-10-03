@@ -19,14 +19,9 @@ var cfgFile string
 var debugMode bool
 
 var rootCmd = &cobra.Command{
-	Use:   "toolbox",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:   "wallet",
+	Short: "ETH Wallet CLI",
+	Long:  `The ETH CLI Wallet is a powerful, lightweight, and user-friendly command-line interface (CLI) application written in Go, designed for managing Ethereum (ETH) assets securely and efficiently..`,
 }
 
 func Execute() {

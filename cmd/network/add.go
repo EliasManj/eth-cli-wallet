@@ -31,7 +31,8 @@ func saveNetwork(label, rpcURL, chainID, symbol, blockExplorerURL string) error 
 var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add a new network to the wallet",
-	Long:  `Add a new network to the wallet long description`,
+	Long: `add custom networks to the wallet's configuration, enabling you 
+	to connect to any Ethereum-based network using its specific Remote Procedure Call (RPC) endpoint.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		var err error
@@ -43,6 +44,9 @@ var addCmd = &cobra.Command{
 		defer db.Close()
 
 		chainID, err := strconv.Atoi(chainID)
+		if err != nil {
+			log.Fatalf("Failed to convert chain ID to integer: %v", err)
+		}
 
 		network := wallet.Network{
 			Label:   label,
