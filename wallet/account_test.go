@@ -9,6 +9,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestCreateNewAccount(t *testing.T) {
+	account, err := CreateNewAccount(db, "testnewacc")
+	require.NoError(t, err)
+	require.Equal(t, "testnewacc", account.Label)
+	require.NotEmpty(t, account.Privatey)
+	require.NotEmpty(t, account.Publicy)
+	acc, err := GetAccount(db, account.Label)
+	require.NoError(t, err)
+	require.Equal(t, account.Label, acc.Label)
+	require.Equal(t, account.Privatey, acc.Privatey)
+	require.Equal(t, account.Publicy, acc.Publicy)
+	require.True(t, acc.Selected)
+}
+
 func TestGenerateKeyPair(t *testing.T) {
 	private, public, err := GenerateKeyPair()
 	require.NoError(t, err)
@@ -29,14 +43,6 @@ func TestGenerateKeyPair(t *testing.T) {
 	require.NoError(t, err)
 	derivedAddress := crypto.PubkeyToAddress(privateKey.PublicKey).Hex()
 	require.Equal(t, public, derivedAddress)
-}
-
-func TestCreateNewAccount(t *testing.T) {
-	account, err := CreateNewAccount(db, "testnewacc")
-	require.NoError(t, err)
-	require.Equal(t, "testnewacc", account.Label)
-	require.NotEmpty(t, account.Privatey)
-	require.NotEmpty(t, account.Publicy)
 }
 
 func TestImportAccount(t *testing.T) {
@@ -89,4 +95,35 @@ func TestSelectAccount(t *testing.T) {
 	require.True(t, activeAccount.Selected)
 	require.Equal(t, account1.Privatey, activeAccount.Privatey)
 	require.Equal(t, account1.Publicy, activeAccount.Publicy)
+}
+
+func TestOnlyOneSelectedAccount(t *testing.T) {
+	account1, err := CreateNewAccount(db, "testonlyoneacc1")
+	require.NoError(t, err)
+	account2, err := CreateNewAccount(db, "testonlyoneacc2")
+	require.NoError(t, err)
+	account3, err := CreateNewAccount(db, "testonlyoneacc3")
+	require.NoError(t, err)
+
+	err = SelectAccount(db, account1.Label)
+	require.NoError(t, err)
+	err = SelectAccount(db, account2.Label)
+	require.NoError(t, err)
+	err = SelectAccount(db, account3.Label)
+	require.NoError(t, err)
+
+	activeAccount, err := GetSelectedAccount(db)
+	require.NoError(t, err)
+	require.Equal(t, account3.Label, activeAccount.Label)
+	require.True(t, activeAccount.Selected)
+	require.Equal(t, account3.Privatey, activeAccount.Privatey)
+	require.Equal(t, account3.Publicy, activeAccount.Publicy)
+
+	acc1, err := GetAccount(db, account1.Label)
+	require.NoError(t, err)
+	require.False(t, acc1.Selected)
+
+	acc2, err := GetAccount(db, account2.Label)
+	require.NoError(t, err)
+	require.False(t, acc2.Selected)
 }

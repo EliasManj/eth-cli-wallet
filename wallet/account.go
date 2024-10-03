@@ -46,6 +46,7 @@ func CreateNewAccount(db *bolt.DB, label string) (Account, error) {
 		Label:    label,
 		Publicy:  publicKey,
 		Privatey: privateKey,
+		Selected: true,
 	}
 	return acc, ImportAccount(db, acc)
 }
@@ -188,6 +189,17 @@ func ListAccounts(db *bolt.DB) ([]Account, error) {
 }
 
 func SelectAccount(db *bolt.DB, label string) error {
+	// deselect current acccount
+	selectedAccount, err := GetSelectedAccount(db)
+	if err == nil {
+		selectedAccount.Selected = false
+		err = UpdateAccount(db, selectedAccount)
+		if err != nil {
+			return err
+		}
+	}
+
+	// select new account
 	account, err := GetAccount(db, label)
 	if err != nil {
 		return err
@@ -215,7 +227,7 @@ func GetSelectedAccount(db *bolt.DB) (Account, error) {
 	err := db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("selected"))
 		if bucket == nil {
-			return fmt.Errorf("bucket not found")
+			return nil
 		}
 
 		label = string(bucket.Get([]byte("acc")))

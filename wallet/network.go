@@ -22,6 +22,7 @@ func AddNetwork(db *bolt.DB, network Network) error {
 	if !strings.HasPrefix(network.RpcUrl, "http://") && !strings.HasPrefix(network.RpcUrl, "https://") {
 		return fmt.Errorf("rpcUrl must start with 'http://' or 'https://'")
 	}
+	network.Selected = true
 	// Open a writable transaction
 	err := db.Update(func(tx *bolt.Tx) error {
 		// Create or get the bucket "networks"
@@ -58,7 +59,7 @@ func ListNetworks(db *bolt.DB) ([]Network, error) {
 		// Get the bucket "networks"
 		bucket := tx.Bucket([]byte("networks"))
 		if bucket == nil {
-			return fmt.Errorf("bucket not found")
+			return nil
 		}
 
 		// Iterate through all key-value pairs in the bucket
@@ -139,6 +140,16 @@ func GetNetwork(db *bolt.DB, label string) (Network, error) {
 }
 
 func SelectNetwork(db *bolt.DB, label string) error {
+	// deselect currente selected network
+	selectedNetwork, err := GetSelectedNetwork(db)
+	if err == nil {
+		selectedNetwork.Selected = false
+		err = UpdateNetwork(db, selectedNetwork)
+		if err != nil {
+			return err
+		}
+	}
+
 	network, err := GetNetwork(db, label)
 	if err != nil {
 		return err

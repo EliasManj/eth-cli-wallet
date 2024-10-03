@@ -31,3 +31,4 @@ go.work.sum
 .vscode/
 .idea/
 db/
+commands.txt
