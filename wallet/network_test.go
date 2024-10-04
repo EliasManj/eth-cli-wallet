@@ -151,6 +151,23 @@ func TestOnlyOneSelectedNetwork(t *testing.T) {
 	require.Equal(t, false, n1.Selected)
 	require.Equal(t, false, n2.Selected)
 	require.Equal(t, true, n3.Selected)
+
+	selected, err := GetSelectedNetwork(db)
+	require.NoError(t, err)
+	require.Equal(t, net3.Label, selected.Label)
+}
+
+func TestAddNetworkAndGetSelected(t *testing.T) {
+	network := Network{Label: "addandtestselected", ChainId: 123, Symbol: "ETH", RpcUrl: "http://localhost:8545"}
+	require.NoError(t, AddNetwork(db, network))
+
+	net, err := GetSelectedNetwork(db)
+	require.NoError(t, err)
+	require.Equal(t, network.Label, net.Label)
+	require.Equal(t, network.ChainId, net.ChainId)
+	require.Equal(t, network.Symbol, net.Symbol)
+	require.Equal(t, network.RpcUrl, net.RpcUrl)
+	require.True(t, net.Selected)
 }
 
 func TestNoNetworksToList(t *testing.T) {

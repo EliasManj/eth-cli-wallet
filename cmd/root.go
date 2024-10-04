@@ -21,7 +21,7 @@ var debugMode bool
 var rootCmd = &cobra.Command{
 	Use:   "wallet",
 	Short: "ETH Wallet CLI",
-	Long:  `The ETH CLI Wallet is a powerful, lightweight, and user-friendly command-line interface (CLI) application written in Go, designed for managing Ethereum (ETH) assets securely and efficiently..`,
+	Long:  `Command-line interface (CLI) application written in Go, designed for managing Ethereum assets.`,
 }
 
 func Execute() {

@@ -47,7 +47,11 @@ func AddNetwork(db *bolt.DB, network Network) error {
 		return bucket.Put([]byte(network.Label), networkJSON)
 	})
 
-	return err
+	if err != nil {
+		return err
+	}
+
+	return SelectNetwork(db, network.Label)
 }
 
 // listNetworks retrieves all networks from the Bolt database
