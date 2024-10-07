@@ -49,7 +49,8 @@ func init() {
 	// Add my subcommand palette
 	rootCmd.AddCommand(network.NetworkCmd)
 	rootCmd.AddCommand(account.AccountCmd)
-	rootCmd.AddCommand(send.SendCmd)
+	rootCmd.AddCommand(send.SendEthCmd)
+	rootCmd.AddCommand(send.SendWeiCmd)
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.

@@ -50,15 +50,14 @@ func TestGetBalanceAfterSendingTransaction(t *testing.T) {
 	initialBalance, err := GetBalance(from.Publicy, network)
 	require.NoError(t, err)
 
-	tx, err := SendETH(from.Privatey, to.Publicy, amountToSend, network)
+	tx, err := SendWei(from.Privatey, to.Publicy, amountToSend, network)
 	require.NoError(t, err)
 	require.Equal(t, from.Publicy, tx.From)
 	require.Equal(t, to.Publicy, tx.To)
 	require.Equal(t, amountToSend, tx.Amount)
 
-	// Calculate the expected final balance
-	gasUsed := tx.GasUsed   // Replace with the actual method to get gas used
-	gasPrice := tx.GasPrice // Replace with the actual method to get gas price
+	gasUsed := tx.GasUsed
+	gasPrice := tx.GasPrice
 	gasCost := new(big.Int).Mul(gasUsed, gasPrice)
 
 	expectedFinalBalance := new(big.Int).Sub(initialBalance, tx.Amount)
@@ -67,4 +66,44 @@ func TestGetBalanceAfterSendingTransaction(t *testing.T) {
 	finalBalance, err := GetBalance(from.Publicy, network)
 	require.NoError(t, err)
 	require.Equal(t, expectedFinalBalance, finalBalance)
+}
+
+func TestSendEthAndConvertToWei(t *testing.T) {
+	eth := 99.0
+	from := Account{
+		Publicy:  "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+		Privatey: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+		Label:    utils.CreateNetworkLabel("from"),
+	}
+	to := Account{
+		Publicy: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+		Label:   utils.CreateNetworkLabel("to"),
+	}
+	err := ImportAccount(db, from)
+	require.NoError(t, err)
+	network := Network{Label: "test", ChainId: 31337, Symbol: "ETH", RpcUrl: "http://localhost:8545"}
+
+	initialBalance, err := GetBalance(from.Publicy, network)
+	require.NoError(t, err)
+
+	amountToSend := new(big.Float).SetFloat64(eth)
+	amountToSendInWei := utils.EthToWei(amountToSend)
+	tx, err := SendETH(from.Privatey, to.Publicy, amountToSend, network)
+	require.NoError(t, err)
+	require.Equal(t, from.Publicy, tx.From)
+	require.Equal(t, to.Publicy, tx.To)
+	require.Equal(t, amountToSendInWei, tx.Amount)
+
+	gasUsed := tx.GasUsed
+	gasPrice := tx.GasPrice
+	gasCost := new(big.Int).Mul(gasUsed, gasPrice)
+
+	expectedFinalBalance := new(big.Int).Sub(initialBalance, amountToSendInWei)
+	expectedFinalBalance.Sub(expectedFinalBalance, gasCost)
+
+	finalBalance, err := GetBalance(from.Publicy, network)
+
+	require.NoError(t, err)
+	require.Equal(t, expectedFinalBalance, finalBalance)
+
 }

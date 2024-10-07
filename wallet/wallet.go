@@ -3,6 +3,7 @@ package wallet
 import (
 	"context"
 	"fmt"
+	"math"
 	"math/big"
 	"strings"
 	"time"
@@ -90,7 +91,89 @@ func GetTokenBalance(tokenAddress string, ownerAddress string, network Network) 
 }
 
 // SendETH sends Ether from one account to another.
-func SendETH(fromPrivateKey string, toAddress string, amount *big.Int, network Network) (Transaction, error) {
+func SendETH(fromPrivateKey string, toAddress string, ethAmount *big.Float, network Network) (Transaction, error) {
+	client, err := ethclient.Dial(network.RpcUrl)
+	if err != nil {
+		return Transaction{}, fmt.Errorf("failed to connect to the Ethereum client: %v", err)
+	}
+	defer client.Close()
+
+	// Remove "0x" prefix from the private key
+	if len(fromPrivateKey) > 2 && fromPrivateKey[:2] == "0x" {
+		fromPrivateKey = fromPrivateKey[2:]
+	}
+
+	// Convert the private key string to ecdsa.PrivateKey
+	privateKey, err := crypto.HexToECDSA(fromPrivateKey)
+	if err != nil {
+		return Transaction{}, fmt.Errorf("invalid private key: %v", err)
+	}
+
+	// Convert the ETH amount to wei
+
+	weiAmount := new(big.Int)
+	ethToWei := new(big.Float).Mul(ethAmount, big.NewFloat(math.Pow10(18))) // ETH to wei conversion
+	ethToWei.Int(weiAmount)                                                 // Store the result in a big.Int
+
+	// Get the public address of the sender
+	fromAddress := crypto.PubkeyToAddress(privateKey.PublicKey)
+	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
+	if err != nil {
+		return Transaction{}, fmt.Errorf("failed to get nonce: %v", err)
+	}
+
+	// Set gas price
+	gasPrice, err := client.SuggestGasPrice(context.Background())
+	if err != nil {
+		return Transaction{}, fmt.Errorf("failed to get gas price: %v", err)
+	}
+
+	// Set gas limit
+	gasLimit := uint64(21000) // basic transaction
+
+	// Create the transaction
+	tx := types.NewTransaction(nonce, common.HexToAddress(toAddress), weiAmount, gasLimit, gasPrice, nil)
+
+	// Sign the transaction with the sender's private key
+	chainID := big.NewInt(int64(network.ChainId))
+	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
+	if err != nil {
+		return Transaction{}, fmt.Errorf("failed to sign transaction: %v", err)
+	}
+
+	// Send the transaction
+	err = client.SendTransaction(context.Background(), signedTx)
+	if err != nil {
+		return Transaction{}, fmt.Errorf("failed to send transaction: %v", err)
+	}
+
+	// Retry mechanism for fetching the receipt
+	var receipt *types.Receipt
+	for {
+		receipt, err = client.TransactionReceipt(context.Background(), signedTx.Hash())
+		if err == nil {
+			break
+		}
+		if err.Error() == "not found" {
+			time.Sleep(time.Second * 1)
+			continue
+		}
+		return Transaction{}, fmt.Errorf("failed to get transaction receipt: %v", err)
+	}
+
+	// Return the transaction details including gas used and gas price
+	return Transaction{
+		From:     fromAddress.String(),
+		To:       toAddress,
+		Amount:   weiAmount,
+		Network:  network,
+		Hash:     signedTx.Hash().Hex(),
+		GasUsed:  new(big.Int).SetUint64(receipt.GasUsed),
+		GasPrice: gasPrice,
+	}, nil
+}
+
+func SendWei(fromPrivateKey string, toAddress string, amount *big.Int, network Network) (Transaction, error) {
 	client, err := ethclient.Dial(network.RpcUrl)
 	if err != nil {
 		return Transaction{}, fmt.Errorf("failed to connect to the Ethereum client: %v", err)
