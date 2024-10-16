@@ -175,7 +175,7 @@ func TestNoNetworksToList(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, network := range networks {
-		err := deleteNetwork(db, network.Label)
+		err := DeleteNetwork(db, network.Label)
 		require.NoError(t, err)
 	}
 
