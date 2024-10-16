@@ -113,7 +113,7 @@ var SendWeiCmd = &cobra.Command{
 }
 
 var SendEthCmd = &cobra.Command{
-	Use:   "sendwei",
+	Use:   "sendeth",
 	Short: "Send eth from the selected address and network to the specified account",
 	Long:  `Send eth from the selected address and network to the specified account`,
 	Run: func(cmd *cobra.Command, args []string) {

@@ -84,7 +84,7 @@ func ListNetworks(db *bolt.DB) ([]Network, error) {
 }
 
 // deleteNetwork removes a network from the Bolt database
-func deleteNetwork(db *bolt.DB, label string) error {
+func DeleteNetwork(db *bolt.DB, label string) error {
 	// Open a writable transaction
 	err := db.Update(func(tx *bolt.Tx) error {
 		// Get the bucket "networks"

@@ -64,7 +64,7 @@ func TestAddAndDeleteNetwork(t *testing.T) {
 		t.Fatalf("Failed to add network: %s", err)
 	}
 	// delete the network
-	if err := deleteNetwork(db, network.Label); err != nil {
+	if err := DeleteNetwork(db, network.Label); err != nil {
 		t.Fatalf("Failed to delete network: %s", err)
 	}
 }
@@ -75,7 +75,7 @@ func TestAddAndListNetworks(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, network := range todel {
-		err := deleteNetwork(db, network.Label)
+		err := DeleteNetwork(db, network.Label)
 		require.NoError(t, err)
 	}
 
